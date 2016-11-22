@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#include <cuda.h>
 
 /**********************
 * using local memory *
