@@ -27,4 +27,6 @@ int main(int nargs,char** args)
 
 	printf("Process - %d says %s \n", rank, msg_buf );
 	
+	MPI_Finalize();
+	
 }
