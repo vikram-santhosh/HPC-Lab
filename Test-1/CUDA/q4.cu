@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <cuda.h>
 
+#define N 128
+
 /**********************
 * using local memory *
 **********************/
@@ -8,10 +10,11 @@
 
 __global__ void use_local_memory_GPU(float in)
 {
-
+	int idx = threadIdx.x;
 	float f; // variable "f" is in local memory and private to each thread
 	f = in; // parameter "in" is in local memory and private to each thread
- 		// ... real code would presumably do other stuff here ...
+ 	
+ 	printf("Thread - %d : %f\n",idx,f);
 }
 
 /**********************
@@ -31,6 +34,7 @@ __global__ void use_global_memory_GPU(float *array)
 * using shared memory *
 **********************/
 // (for clarity, hardcoding 128 threads/elements and omitting out-ofbounds checks)
+
 __global__ void use_shared_memory_GPU(float *array)
 {
 	// local variables, private to each thread
@@ -65,34 +69,27 @@ int main(int argc, char **argv)
 	 /*
 	 * First, call a kernel that shows using local memory
 	 */
- 	se_local_memory_GPU<<<1, 128>>>(2.0f);
+ 	use_local_memory_GPU<<<1, N>>>(2.0f);
+ 	int size = N * sizeof(float);
 	 /*
 	 * Next, call a kernel that shows using global memory
 	 */
- 	float h_arr[128]; // convention: h_ variables live on host
+ 	float h_arr[N]; // convention: h_ variables live on host
  	float *d_arr; // convention: d_ variables live on device (GPU global mem)
  	// allocate global memory on the device, place result in "d_arr"
  	
- 	cudaMalloc((void **) &d_arr, sizeof(float) * 128);
+ 	cudaMalloc((void **) &d_arr, size);
  	// now copy data from host memory "h_arr" to device memory "d_arr"
- 	cudaMemcpy((void *)d_arr, (void *)h_arr, sizeof(float) * 128,cudaMemcpyHostToDevice);
+ 	cudaMemcpy(d_arr, h_arr, size,cudaMemcpyHostToDevice);
  	// launch the kernel (1 block of 128 threads)
-	use_global_memory_GPU<<<1, 128>>>(d_arr); // modifies the contents of array at d_arr
+	use_global_memory_GPU<<<1, N>>>(d_arr); // modifies the contents of array at d_arr
  	// copy the modified array back to the host, overwriting contents of h_arr
- 	cudaMemcpy((void *)h_arr, (void *)d_arr, sizeof(float) * 128,cudaMemcpyDeviceToHost);
-
-	 // ... do other stuff ...
-	 /*
-	 * Next, call a kernel that shows using shared memory
-	 */
-	 // as before, pass in a pointer to data in global memory
+ 	cudaMemcpy(h_arr,d_arr,size,cudaMemcpyDeviceToHost);
 
  	use_shared_memory_GPU<<<1, 128>>>(d_arr);
  	// copy the modified array back to the host
- 	cudaMemcpy((void *)h_arr, (void *)d_arr, sizeof(float) * 128,
-	cudaMemcpyHostToDevice);
- 	// ... do other stuff ...
-	// force the printf()s to flush
+ 	cudaMemcpy(h_arr, d_arr, size,cudaMemcpyHostToDevice);
+
  	cudaDeviceSynchronize();
  	return 0;
 }
