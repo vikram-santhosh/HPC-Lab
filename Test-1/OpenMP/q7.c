@@ -14,7 +14,8 @@ int main()
 	int max = -1;
 
 	omp_lock_t lock;
-
+	omp_init_lock(&lock);
+	
 	omp_set_num_threads(NUM_THREADS);
 
 	for(i=0;i<N;i++)
