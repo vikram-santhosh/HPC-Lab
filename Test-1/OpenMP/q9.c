@@ -26,6 +26,6 @@ int main()
 		}
 	}
 
-	for(int i=1;i<N;i++)
+	for(i=1;i<N;i++)
 		printf("%d\n",fact[i]);
 }
