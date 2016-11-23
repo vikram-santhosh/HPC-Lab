@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <omp.h>
 
-#define N 1000
+#define N 100
 #define NUM_THREADS 4
 
 
