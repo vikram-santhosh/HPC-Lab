@@ -23,9 +23,8 @@ int main(int narg, char** args)
 	{
 		strcpy(msg,"Flintstone!");
 		for(i=0;i<num_procs;i++)
-		{
-			MPI_Send(msg,SIZE,MPI_CHAR,i,msg_tag,MPI_COMM_WORLD);
-		}
+			if(i!=sender_rank)
+				MPI_Send(msg,SIZE,MPI_CHAR,i,msg_tag,MPI_COMM_WORLD);
 	}
 
 	else
